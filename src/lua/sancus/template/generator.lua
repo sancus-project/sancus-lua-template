@@ -25,7 +25,10 @@ local function parser()
 	expression = Ct(Cg(expression, "value") * Cg(Cc("expr"), "type"))
 
 	-- <% ... %>
-	local inline = bi * C(space * (1 - nl - ei)^1) * ei
+	local inline = (1 - ei)^1
+	inline = bi * (C(
+		(space * inline) + (nl * inline)
+		)+(space + nl)^1) * ei
 	inline = Ct(Cg(inline, "value") * Cg(Cc("inline"), "type"))
 
 	-- [ \t* %% comment
