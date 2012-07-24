@@ -126,10 +126,6 @@ local function fold(t)
 	local out, s = {}, {}
 	local ptrim
 
-	if t == nil then
-		return
-	end
-
 	do
 		-- trimming pattern
 		local nl = P"\n" + P"\r\n"
@@ -175,8 +171,45 @@ local function fold(t)
 	return out
 end
 
+local function render(t)
+	local out, v = {}
+	out[#out+1] = "return function(_T,_C)"
+
+	local function quote(s)
+		-- TODO: replace with lpeg
+		return s:gsub("\\","\\\\"):gsub("\"", '\\"'):gsub("\n", "\\n"):gsub("\t","\\t")
+	end
+
+	for _, x in ipairs(t) do
+		if type(x) == "string" then
+			-- %q is broken for \n and maybe others
+			v = quote(x)
+			v = ("_T:yield(\"%s\")"):format(v)
+		elseif x.type == "expr" then
+			v = ("_T:yield(%s)"):format(x.value)
+		elseif x.type == "command" then
+			v = {}
+			for k,val in pairs(x.args) do
+				v[#v+1] = ("%s=%q"):format(k, val)
+			end
+			if #v > 0 then
+				v = ("_T:%s(_C, {%s})"):format(x.value, table.concat(v, ','))
+			else
+				v = ("_T:%s(_C)"):format(x.value)
+			end
+		else
+			v = x.value
+		end
+		if v then
+			out[#out+1] = v
+		end
+	end
+	out[#out+1] = "end"
+	return table.concat(out, '\n')
+end
+
 local function new(s)
-	return fold(parse(s))
+	return render(fold(parse(s)))
 end
 
 setmetatable(_M, {
