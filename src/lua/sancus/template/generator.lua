@@ -48,8 +48,10 @@ local function parser()
 
 	-- [ \t]* %% comment
 	local comment = space^0 * P"%%" * rest * eol
+
 	-- [ \t]* % ...
 	local code = space^0 * P"%" * C(rest) * eol
+	code = Ct(Cg(code, "value") * Cg(Cc("code"), "type"))
 
 	-- everything else
 	local content = 1 - nl - be - bi
