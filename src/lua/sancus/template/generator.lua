@@ -143,7 +143,19 @@ local function fold(t)
 		if type(x) == "string" then
 			s[#s+1] = x
 		else
-			if x.type ~= "command" then
+			if x.type == "command" then
+				local args, key = {}, nil
+				for _, v in ipairs(x) do
+					if key then
+						args[key] = v
+						key = nil
+					else
+						key = v
+					end
+				end
+
+				x = { type = "command", value = x.value, args = args }
+			else
 				x.value = ptrim:match(x.value)
 			end
 
