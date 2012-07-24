@@ -174,6 +174,7 @@ end
 local function render(t)
 	local out, v = {}
 	out[#out+1] = "return function(_T,_C)"
+	out[#out+1] = "setfenv(1, {__index=_C})"
 
 	local function quote(s)
 		-- TODO: replace with lpeg
