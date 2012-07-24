@@ -15,7 +15,7 @@ local _M = {}
 
 local function parser()
 	local space, nl = S" \t", P"\n" + P"\r\n"
-	local rest = (1 - nl)^1
+	local rest = (1 - nl)^0
 	local eol = (P(-1) + nl)
 
 	local char = R"az" + R"AZ"
@@ -124,20 +124,37 @@ end
 
 local function fold(t)
 	local out, s = {}, {}
+	local ptrim
 
 	if t == nil then
 		return
+	end
+
+	do
+		-- trimming pattern
+		local nl = P"\n" + P"\r\n"
+		local space = S' \t' + nl
+		local nospace = 1 - space
+
+		ptrim = space^0 * C((space^0 * nospace^1)^0)
 	end
 
 	for _, x in ipairs(t) do
 		if type(x) == "string" then
 			s[#s+1] = x
 		else
-			if #s > 0 then
-				out[#out+1] = table.concat(s)
-				s = {}
+			if x.type ~= "command" then
+				x.value = ptrim:match(x.value)
 			end
-			out[#out+1] = x
+
+			if #x.value > 0 then
+				if #s > 0 then
+					out[#out+1] = table.concat(s)
+					s = {}
+				end
+
+				out[#out+1] = x
+			end
 		end
 	end
 	if #s > 0 then
