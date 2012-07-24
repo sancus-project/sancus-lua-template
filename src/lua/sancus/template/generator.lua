@@ -122,9 +122,32 @@ local function parse(s)
 	error(fmt:format(line, col, line, s1, prefix, s2))
 end
 
+local function fold(t)
+	local out, s = {}, {}
+
+	if t == nil then
+		return
+	end
+
+	for _, x in ipairs(t) do
+		if type(x) == "string" then
+			s[#s+1] = x
+		else
+			if #s > 0 then
+				out[#out+1] = table.concat(s)
+				s = {}
+			end
+			out[#out+1] = x
+		end
+	end
+	if #s > 0 then
+		out[#out+1] = table.concat(s)
+	end
+	return out
+end
+
 local function new(s)
-	local t = parse(s)
-	return t
+	return fold(parse(s))
 end
 
 setmetatable(_M, {
