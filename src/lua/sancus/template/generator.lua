@@ -37,7 +37,7 @@ local function parser()
 	-- <%command ... />
 	local command = space^1 * C(attr) * P"=" * value
 	command = bc * Cg(attr, "value") * Cg(Cc("command"), "type") * (command^0) * space^0 * ec
-	command = Ct(command)
+	command = Ct(command) * (space^0 * eol)^-1
 
 	-- <% ... %>
 	local inline = (1 - ei)^1
