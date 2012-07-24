@@ -18,12 +18,26 @@ local function parser()
 	local rest = (1 - nl)^1
 	local eol = (P(-1) + nl)
 
+	local char = R"az" + R"AZ"
+	local num = R"09"
+
+	local dq = P'"'
+
 	local be, ee = P"${", P"}"
 	local bi, ei = P"<%", P"%>"
+	local bc, ec = bi, P"/>"
+
+	local attr = char * (char + num + P"_")^0
+	local value = (dq * C((1-dq)^0) * dq) + (num^1)/tonumber
 
 	-- ${ ... }
 	local expression = be * C((1 - nl - ee)^1) * ee
 	expression = Ct(Cg(expression, "value") * Cg(Cc("expr"), "type"))
+
+	-- <%command ... />
+	local command = space^1 * C(attr) * P"=" * value
+	command = bc * Cg(attr, "value") * Cg(Cc("command"), "type") * (command^0) * space^0 * ec
+	command = Ct(command)
 
 	-- <% ... %>
 	local inline = (1 - ei)^1
@@ -43,7 +57,8 @@ local function parser()
 	content = C(nl + content)
 
 	local things = comment + code +
-			content + expression + inline
+			content + expression + inline +
+			command
 
 	return Ct(things^1) * Cp()
 end
