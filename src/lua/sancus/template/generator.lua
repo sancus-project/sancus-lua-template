@@ -8,10 +8,12 @@ local lpeg = assert(require"lpeg")
 local P,R,S,V = lpeg.P, lpeg.R, lpeg.S, lpeg.V
 local C,Cc,Cg,Ct,Cp = lpeg.C, lpeg.Cc, lpeg.Cg, lpeg.Ct, lpeg.Cp
 
-local assert, setmetatable, tostring, type = assert, setmetatable, tostring, type
-local sformat = string.format
+local assert, ipairs, pairs, type = assert, ipairs, pairs, type
+local setmetatable, loadstring = setmetatable, loadstring
+local tostring, tonumber, tconcat = tostring, tonumber, table.concat
 
 local _M = {}
+setfenv(1, _M)
 
 local function parser()
 	local space, nl = S" \t", P"\n" + P"\r\n"
@@ -157,7 +159,7 @@ local function fold(t)
 
 			if #x.value > 0 then
 				if #s > 0 then
-					out[#out+1] = table.concat(s)
+					out[#out+1] = tconcat(s)
 					s = {}
 				end
 
@@ -166,7 +168,7 @@ local function fold(t)
 		end
 	end
 	if #s > 0 then
-		out[#out+1] = table.concat(s)
+		out[#out+1] = tconcat(s)
 	end
 	return out
 end
@@ -174,7 +176,6 @@ end
 local function render(t)
 	local out, v = {}
 	out[#out+1] = "return function(_T,_C)"
-	out[#out+1] = "setfenv(1, {__index=_C})"
 
 	local function quote(s)
 		-- TODO: replace with lpeg
@@ -185,16 +186,16 @@ local function render(t)
 		if type(x) == "string" then
 			-- %q is broken for \n and maybe others
 			v = quote(x)
-			v = ("_T:yield(\"%s\")"):format(v)
+			v = ("_T.yield(\"%s\")"):format(v)
 		elseif x.type == "expr" then
-			v = ("_T:yield(%s)"):format(x.value)
+			v = ("_T.yield(%s)"):format(x.value)
 		elseif x.type == "command" then
 			v = {}
 			for k,val in pairs(x.args) do
 				v[#v+1] = ("%s=%q"):format(k, val)
 			end
 			if #v > 0 then
-				v = ("_T:%s(_C, {%s})"):format(x.value, table.concat(v, ','))
+				v = ("_T:%s(_C,{%s})"):format(x.value, tconcat(v, ','))
 			else
 				v = ("_T:%s(_C)"):format(x.value)
 			end
@@ -206,11 +207,15 @@ local function render(t)
 		end
 	end
 	out[#out+1] = "end"
-	return table.concat(out, '\n')
+	return tconcat(out, '\n')
+end
+
+local function compile(s)
+	return loadstring(s)
 end
 
 local function new(s)
-	return render(fold(parse(s)))
+	return compile(render(fold(parse(s))))
 end
 
 setmetatable(_M, {
