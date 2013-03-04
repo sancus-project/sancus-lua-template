@@ -16,9 +16,15 @@ local pp, stderr = utils.pprint, utils.stderr
 local _M = { _NAME = ...}
 setfenv(1, _M)
 
+local function yield(s)
+	if s ~= nil then
+		coroutine.yield(s)
+	end
+end
+
 Template = Class{
 	-- coroutines
-	yield = coroutine.yield,
+	yield = yield,
 }
 
 -- returns path to template by name
