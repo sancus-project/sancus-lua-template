@@ -186,9 +186,9 @@ local function render(t)
 		if type(x) == "string" then
 			-- %q is broken for \n and maybe others
 			v = quote(x)
-			v = ("_T.yield(\"%s\")"):format(v)
+			v = ("_T:yield(\"%s\")"):format(v)
 		elseif x.type == "expr" then
-			v = ("_T.yield(%s)"):format(x.value)
+			v = ("_T:yield_expr(%s)"):format(x.value)
 		elseif x.type == "command" then
 			v = {}
 			for k,val in pairs(x.args) do
