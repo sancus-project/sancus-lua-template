@@ -8,7 +8,8 @@ local lpeg = assert(require"lpeg")
 local P,R,S,V = lpeg.P, lpeg.R, lpeg.S, lpeg.V
 local C,Cc,Cg,Ct,Cp = lpeg.C, lpeg.Cc, lpeg.Cg, lpeg.Ct, lpeg.Cp
 
-local assert, ipairs, pairs, type = assert, ipairs, pairs, type
+local assert, error = assert, error
+local ipairs, pairs, type = ipairs, pairs, type
 local setmetatable, loadstring = setmetatable, loadstring
 local tostring, tonumber, tconcat = tostring, tonumber, table.concat
 
