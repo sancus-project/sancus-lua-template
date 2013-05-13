@@ -9,6 +9,7 @@ local Class = assert(require"sancus.object").Class
 local generator = assert(require"sancus.template.generator")
 
 local assert, loadstring, type = assert, loadstring, type
+local tostring = tostring
 local setfenv = setfenv
 local coroutine, io = coroutine, io
 local pp, stderr = utils.pprint, utils.stderr
@@ -18,7 +19,7 @@ setfenv(1, _M)
 
 local function yield(self, s)
 	if s ~= nil then
-		coroutine.yield(s)
+		coroutine.yield(tostring(s))
 	end
 end
 
